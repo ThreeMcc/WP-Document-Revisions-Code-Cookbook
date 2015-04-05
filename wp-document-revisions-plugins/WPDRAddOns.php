@@ -170,6 +170,22 @@ if ( !class_exists( 'appts_gf_AdminPageFramework' ) && is_admin()) :
 						'description'   => 'What do you want to label "Documents" as now?.',
 						'default'				=> 'Documents'
       		),
+					array(
+						'field_id'      => 'hide_rss_key_in_profile',
+						'tab_slug'      => 'wpdr_basic',
+						'type'          => 'checkbox',
+						'title'         => __( 'Hide RSS Key in User Profile', 'WPDRAddOns' ),
+						'label'   => 'IF you are tired of explaining what this is...',
+						'default'				=> false
+      		),
+					array(
+						'field_id'      => 'remove_post_lock_override',
+						'tab_slug'      => 'wpdr_basic',
+						'type'          => 'checkbox',
+						'title'         => __( 'Remove Post Lock Override', 'WPDRAddOns' ),
+						'label'   => 'If you have a problem with people overriding other people\'s document locks.',
+						'default'				=> false
+      		),
       		
           array(
             'field_id' => 'submit_button',
@@ -188,6 +204,12 @@ endif;//class_exists( 'wpdr_AdminPageFramework' )
 if(!class_exists('load_wpdr_addons')):
   class load_wpdr_addons {
   	public function load_wpdr_addons(){
+  		global $wpdr;
+			$admin = $wpdr->admin;
+			
+			//uncomment if you want to remove the network admin settings (alternate file locations and such
+			remove_action( 'wpmu_options', array( &$admin, 'network_settings_cb' ) );
+			
   		if($options = get_option('WPDR_AddOns_Config', false)){
   			if( $options['opt']['enable_file_type_taxonomy'] )
   				include 'WPDRAddOns/filetype-filter.php';
@@ -211,9 +233,10 @@ if(!class_exists('load_wpdr_addons')):
   				include 'WPDRAddOns/rename-documents.php';
   			if( $options['opt']['enable_queryable_workflow_state'] )
   				include 'WPDRAddOns/pclj-make-workflow-state-queryable.php';
-  				
-  				
-  				
+  			if( $options['opt']['hide_rss_key_in_profile'] )
+					remove_action( 'show_user_profile', array( $admin, 'rss_key_display' ) );
+  			if( $options['opt']['remove_post_lock_override'] )
+  				add_filter( 'override_post_lock', create_function("", 'return false;' ));
   		}
   	}
 	}
